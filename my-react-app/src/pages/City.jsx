@@ -3,64 +3,37 @@ import { useQuery } from '@tanstack/react-query'
 import ClipLoader from "react-spinners/ClipLoader"
 import CityCard from '../components/CityCard'
 
-const cityNames = [
-  'New York',
-  'London',
-  'Paris',
-  'Tokyo',
-  'Sydney',
-  'Berlin',
-  'Toronto',
-  'Moscow',
-  'Beijing',
-  'Dubai',
-  'Tehran',
-  'São Paulo'
-]
+const cityNames = ['New York','London','Paris','Tokyo','Sydney','Berlin','Toronto','Moscow','Beijing','Dubai','Tehran','São Paulo']
 
-const city = cityNames.map((item) => item)
-
-const tehtan = 'tehran'
-
-// const fetchGeoWeather = async () => {
-// const response = await fetch('https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&hourly=temperature_2m')
-// const data = await response.json()
-// return data
-// }
-
-const fetchCityNameWeather = async () => {
-  const response = await fetch(`https://api.api-ninjas.com/v1/geocoding?city=${tehtan}`, {
+const fetchCityNameGeo = async (city) => {
+  const response = await fetch(`https://api.api-ninjas.com/v1/geocoding?city=${city}`, {
     headers: {'X-Api-Key': 'p7tnhaWIqq542FYPIWv9rg==vIR3eCqrq9ngAJS0'}
   })
   const data = await response.json()
   return data[0]
 }
 
-const City = () => {
-//   const { data: , isLoading: , error: } = useQuery({
-//     queryKey: ['geoWeather'],
-//     queryFn: fetchGeoWeather
-//   })
-//   console.log(data)
+const fetchAllCityNameGeo = async () => {
+  const loopCity = cityNames.map((item) => fetchCityNameGeo(item))
+  const result = await Promise.all(loopCity)
+  return result
+}
 
+const City = () => {
   const { data, isLoading, error } = useQuery({
     queryKey: ['cityName'],
-    queryFn: fetchCityNameWeather
+    queryFn: fetchAllCityNameGeo
   })
-  console.log(data)
-
-
-
   return (
-    <div className='bg-blue-100 flex flex-col items-center justify-center gap-4 h-screen w-screen'>
-        {isLoading && <div className='flex items-center gap-4'>Data Is Loading!<ClipLoader size={50}/></div>}
-        {error && <div>Error: {error.message}</div>}
-        {/* {data && data.map((item, index) => (
-            <CityCard item={item} key={index}/>
-        ))} */}
-        <CityCard data={data}/>
+    <div className='bg-blue-100 p-8 min-h-screen w-full'>
+        {isLoading && <div className='flex items-center justify-center gap-4 h-screen'>Data Is Loading!<ClipLoader size={50}/></div>}
+        {error && <div className='flex items-center justify-center gap-4 h-screen'>Error: {error.message}</div>}
+        <div className='grid grid-cols-4 gap-6'>
+        {data && data.map((item, index) => (
+            <CityCard data={item} key={index}/>
+        ))}
+       </div>
       </div>
-  )
-}
+  )}
 
 export default City
